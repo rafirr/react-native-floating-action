@@ -29,8 +29,8 @@ class FloatingAction extends Component {
       keyboardHeight: 0
     };
 
-    this.mainBottomAnimation = new Animated.Value(props.distanceToEdge);
-    this.actionsBottomAnimation = new Animated.Value(ACTION_BUTTON_SIZE + props.distanceToEdge + props.actionsPaddingTopBottom);
+    this.mainBottomAnimation = new Animated.Value(props.distanceToEdge + props.marginBottom);
+    this.actionsBottomAnimation = new Animated.Value(ACTION_BUTTON_SIZE + props.distanceToEdge + props.marginBottom + props.actionsPaddingTopBottom);
     this.animation = new Animated.Value(0);
     this.actionsAnimation = new Animated.Value(0);
     this.visibleAnimation = new Animated.Value(props.visible ? 0 : 1);
@@ -82,7 +82,7 @@ class FloatingAction extends Component {
   }
 
   onKeyboardShow = (e) => {
-    const { distanceToEdge, actionsPaddingTopBottom } = this.props;
+    const { distanceToEdge, actionsPaddingTopBottom, marginBottomOnKeyboard } = this.props;
     const { height } = e.endCoordinates;
 
     Animated.parallel([
@@ -90,7 +90,7 @@ class FloatingAction extends Component {
         this.actionsBottomAnimation,
         {
           bounciness: 0,
-          toValue: (ACTION_BUTTON_SIZE + distanceToEdge + actionsPaddingTopBottom + height) - (isIphoneX() ? 40 : 0),
+          toValue: (ACTION_BUTTON_SIZE + distanceToEdge + marginBottomOnKeyboard + actionsPaddingTopBottom + height) - (isIphoneX() ? 40 : 0),
           duration: 250
         }
       ),
@@ -98,7 +98,7 @@ class FloatingAction extends Component {
         this.mainBottomAnimation,
         {
           bounciness: 0,
-          toValue: (distanceToEdge + height) - (isIphoneX() ? 40 : 0),
+          toValue: (distanceToEdge + marginBottomOnKeyboard + height) - (isIphoneX() ? 40 : 0),
           duration: 250
         }
       )
@@ -106,14 +106,14 @@ class FloatingAction extends Component {
   };
 
   onKeyboardHideHide = () => {
-    const { distanceToEdge, actionsPaddingTopBottom } = this.props;
+    const { distanceToEdge, actionsPaddingTopBottom, marginBottom } = this.props;
 
     Animated.parallel([
       Animated.spring(
         this.actionsBottomAnimation,
         {
           bounciness: 0,
-          toValue: ACTION_BUTTON_SIZE + distanceToEdge + actionsPaddingTopBottom,
+          toValue: ACTION_BUTTON_SIZE + distanceToEdge + marginBottom + actionsPaddingTopBottom,
           duration: 250
         }
       ),
@@ -121,7 +121,7 @@ class FloatingAction extends Component {
         this.mainBottomAnimation,
         {
           bounciness: 0,
-          toValue: distanceToEdge,
+          toValue: distanceToEdge + marginBottom,
           duration: 250
         }
       )
@@ -286,8 +286,6 @@ class FloatingAction extends Component {
           propStyles,
           animatedVisibleView
         ]}
-        accessible={true}
-        accessibilityLabel={'Floating Action Button'}
       >
         <Touchable
           {...getRippleProps(mainButtonColor)}
@@ -377,17 +375,9 @@ class FloatingAction extends Component {
       <TouchableOpacity
         activeOpacity={1}
         style={[styles.overlay, { backgroundColor: overlayColor }]}
-        onPress={this.handlePressBackdrop}
+        onPress={this.reset}
       />
     );
-  }
-
-  handlePressBackdrop = () => {
-    const { onPressBackdrop } = this.props;
-    if (onPressBackdrop) {
-      onPressBackdrop();
-    }
-    this.reset();
   }
 
   render() {
@@ -452,6 +442,8 @@ FloatingAction.defaultProps = {
   overlayColor: 'rgba(68, 68, 68, 0.6)',
   position: 'right',
   distanceToEdge: 30,
+  marginBottom: 0,
+  marginBottomOnKeyboard: 0,
   openOnMount: false,
   showBackground: true,
   iconHeight: 15,
